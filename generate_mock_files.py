@@ -1,22 +1,40 @@
 #!/usr/bin/env python
+from pathlib import Path
+
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
 
 FILL_VALUE = 1.e+20
 
-TIME_STEPS = 1000
+TIME_STEPS = 100
 START_TIME = 150000
 END_TIME = 180000
 
 rng = np.random.default_rng()
 
-for file in ['random', 'mask', 'linear', 'sine']:
-    file_name = f'{file}.nc'
+def main():
+    with init_dataset('random.nc') as ds:
+        ds.variables['var'][:] = rng.standard_normal((TIME_STEPS, 720, 360)) * 100
 
-    print(f'generate {file_name}')
+    with init_dataset('point.nc') as ds:
+        ds.variables['var'][:] = 0.0
+        ds.variables['var'][:, 360:361, 45:46] = 1.0
 
-    ds = nc.Dataset(file_name, 'w', format='NETCDF4_CLASSIC')
+    with init_dataset('mask.nc') as ds:
+        ds.variables['var'][:] = ma.masked
+        ds.variables['var'][:, 350:371, 80:101] = 1.0
+
+    with init_dataset('linear.nc') as ds:
+        ds.variables['var'][:] = np.linspace(0.0, 2.0, num=TIME_STEPS)[:, None, None]
+
+    with init_dataset('sine.nc') as ds:
+        ds.variables['var'][:] = np.sin(np.linspace(-2*np.pi, 2*np.pi, num=TIME_STEPS)[:, None, None]) * 100 + 100
+
+def init_dataset(file_path):
+    print(f'generating {file_path} ...')
+
+    ds = nc.Dataset(file_path, 'w', format='NETCDF4_CLASSIC')
     ds.createDimension('time', None)
     ds.createDimension('lon', 720)
     ds.createDimension('lat', 360)
@@ -39,22 +57,17 @@ for file in ['random', 'mask', 'linear', 'sine']:
     lat.units = 'degrees_north'
     lat.axis = 'Y'
 
-    dis = ds.createVariable('dis', 'f8', ('time', 'lat', 'lon'), fill_value=FILL_VALUE, compression='zlib')
-    dis.standard_name = 'discharge'
-    dis.long_name = 'Discharge'
-    dis.units = 'm3 s-1'
-    dis.missing_value = FILL_VALUE
+    var = ds.createVariable('var', 'f8', ('time', 'lat', 'lon'), fill_value=FILL_VALUE, compression='zlib')
+    var.standard_name = 'var'
+    var.long_name = 'Variable'
+    var.units = '1'
+    var.missing_value = FILL_VALUE
 
     time[:] = np.arange(START_TIME, END_TIME, (END_TIME - START_TIME) / TIME_STEPS)
     lon[:] = np.arange(-179.75, 180.25, 0.5)
     lat[:] = np.arange(89.75, -90.25, -0.5)
 
-    if file == 'random':
-        dis[:] = rng.standard_normal((TIME_STEPS, 720, 360)) * 1000
-    elif file == 'mask':
-        dis[:] = ma.masked
-        dis[:, 60:301, 120:601] = 1000
-    elif file == 'linear':
-        dis[:] = np.linspace(1000, 2000, num=TIME_STEPS)[:, None, None]
-    elif file == 'sine':
-        dis[:] = np.sin(np.linspace(-2*np.pi, 2*np.pi, num=TIME_STEPS)[:, None, None]) * 100 + 1000
+    return ds
+
+if __name__ == '__main__':
+    main()
