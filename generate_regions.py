@@ -1,21 +1,28 @@
+import argparse
 import json
-from pathlib import Path
+import re
 
 from netCDF4 import Dataset
 
-path = Path('/Users/jochen/data/isimip/qa/regions/streamflow_basins_1509.nc')
-ds = Dataset(path)
+argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('prefix')
+parser.add_argument('path')
+args = parser.parse_args()
+
+ds = Dataset(args.path)
 
 regions = []
 for variable_name in ds.variables:
     if variable_name.startswith('m_'):
-        code = variable_name.replace('m_', '').replace('_', '-').lower()
+        code = re.sub(r'^m_', '', variable_name).replace('_', '-').lower()
         regions.append({
             'type': 'mask',
-            'specifier': f'streamflow-{code.lower()}',
-            'mask_path': str(path),
-            'mask_variable': str(variable_name)
+            'specifier': f'{args.prefix}-{code}',
+            'mask_path': str(args.path),
+            'mask_variable': variable_name
         })
 
-with path.with_suffix('.json').open('w') as fp:
+with args.path.with_suffix('.json').open('w') as fp:
     json.dump(regions, fp, indent=2)
