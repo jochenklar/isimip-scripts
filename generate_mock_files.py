@@ -21,11 +21,11 @@ def main():
 
     with init_dataset('point.nc', time=time, var=var) as ds:
         ds.variables['var'][:] = 0.0
-        ds.variables['var'][:, 360:361, 45:46] = 1.0
+        ds.variables['var'][:, 45:46, 360:361] = 1.0
 
     with init_dataset('mask.nc', time=time, var=var) as ds:
         ds.variables['var'][:] = ma.masked
-        ds.variables['var'][:, 350:371, 80:101] = 1.0
+        ds.variables['var'][:, 80:101, 350:371] = 1.0
 
     with init_dataset('linear.nc', time=time, var=var) as ds:
         ds.variables['var'][:] = np.linspace(0.0, 2.0, num=TIME_STEPS)[:, None, None]
