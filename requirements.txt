@@ -1,2 +1,4 @@
+geopandas
 netCDF4
+rioxarray
 xarray
