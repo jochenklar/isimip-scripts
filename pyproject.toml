@@ -28,7 +28,7 @@ section-order = [
   "django",
   "rest_framework",
   "third-party",
-  "rdmo",
+  "isimip",
   "first-party",
   "local-folder"
 ]
@@ -37,7 +37,7 @@ section-order = [
 pytest = ["pytest"]
 django = ["django"]
 rest_framework = ["rest_framework"]
-rdmo = ["rdmo"]
+isimip = ["isimip_utils", "isimip-qc", "isimip-qa", "isimip-publisher"]
 
 [tool.ruff.per-file-ignores]
 "config/settings/*.py" = [

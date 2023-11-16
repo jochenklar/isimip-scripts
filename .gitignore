@@ -15,3 +15,10 @@ __pycache__/
 /*.egg-info
 
 *.nc
+*.cpg
+*.dbf
+*.prj
+*.sbn
+*.sbx
+*.shp
+*.shx
