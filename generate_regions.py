@@ -1,6 +1,7 @@
 import argparse
 import json
 import re
+from pathlib import Path
 
 from netCDF4 import Dataset
 
@@ -11,7 +12,9 @@ parser.add_argument('prefix')
 parser.add_argument('path')
 args = parser.parse_args()
 
-ds = Dataset(args.path)
+path = Path(args.path)
+
+ds = Dataset(path)
 
 regions = []
 for variable_name in ds.variables:
@@ -24,5 +27,5 @@ for variable_name in ds.variables:
             'mask_variable': variable_name
         })
 
-with args.path.with_suffix('.json').open('w') as fp:
+with path.with_suffix('.json').open('w') as fp:
     json.dump(regions, fp, indent=2)
