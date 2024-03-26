@@ -5,8 +5,6 @@ from pathlib import Path
 
 from netCDF4 import Dataset
 
-argparse
-
 parser = argparse.ArgumentParser()
 parser.add_argument('prefix')
 parser.add_argument('path')

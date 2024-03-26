@@ -14,12 +14,5 @@ __pycache__/
 /dist
 /*.egg-info
 
-*.nc
-*.cpg
-*.dbf
-*.prj
-*.sbn
-*.sbx
-*.shp
-*.shx
-*.zip
+/data
+/download
