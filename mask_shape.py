@@ -93,7 +93,7 @@ if job['status'] == 'finished':
     # download file
     zip_path = Path(download_path) / job['file_name']
     zip_path.parent.mkdir(exist_ok=True)
-    log.info('downloading', zip_path=zip_path.as_posix())
+    log.info('downloading', zip_path=str(zip_path.resolve()))
     with requests.get(job['file_url'], stream=True) as response:
         with zip_path.open('wb') as fp:
             for chunk in response.iter_content(chunk_size=8192):
@@ -102,6 +102,6 @@ if job['status'] == 'finished':
     # extract zip file
     out_path = zip_path.with_suffix('')
     out_path.mkdir(exist_ok=True)
-    log.info('extracting', out_path=out_path.as_posix())
+    log.info('extracting', out_path=str(out_path.resolve()))
     with zipfile.ZipFile(zip_path, 'r') as zf:
         zf.extractall(out_path)
