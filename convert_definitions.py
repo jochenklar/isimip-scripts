@@ -5,6 +5,7 @@ from pathlib import Path
 import yaml
 
 ORDER = [
+    'specifier',
     'specifier_file',
     'title',
     'subtitles',
@@ -78,8 +79,11 @@ parser.add_argument('input_file')
 
 args = parser.parse_args()
 
-definitions = {}
-for row in json.load(Path(args.input_file).open()):
+input_path = Path(args.input_file)
+output_path = input_path.with_suffix('.yaml')
+
+definitions = []
+for row in json.load(input_path.open()):
     definition = {}
 
     for key, value in iterrate(row):
@@ -102,15 +106,15 @@ for row in json.load(Path(args.input_file).open()):
         else:
             definition[key] = fold(key, value)
 
-    definitions[row['specifier']] = definition
+    definitions.append(definition)
 
 yaml_string = yaml.dump(definitions, sort_keys=False, allow_unicode=True)
 
 lines = []
 for line in yaml_string.splitlines():
-    if not line.startswith(' '):
+    if not line.startswith(' ') and lines:
         lines.append('')
     lines.append(line)
 lines.append('')
 
-print('\n'.join(lines))
+output_path.write_text('\n'.join(lines))
