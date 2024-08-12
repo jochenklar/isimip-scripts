@@ -10,12 +10,14 @@ CREATOR_KEYS = ['name', 'givenName', 'familyName', 'nameIdentifiers', 'affiliati
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('simulation_round')
-    parser.add_argument('model_id', nargs='+')
+    parser.add_argument('model_id')
     parser.add_argument('-o', dest='output_file')
+    parser.add_argument('-i', dest='url_id')
 
     args = parser.parse_args()
 
-    model_ids = args.model_id
+    model_id = args.model_id
+    url_id = args.url_id
 
     metadata = {
         'creators': [],
@@ -26,21 +28,20 @@ def main():
         'relatedIdentifiers': []
     }
 
-    for model_id in model_ids:
-        model_json = fetch_json(model_id)
-        model_url = f'https://www.isimip.org/impactmodels/details/{model_id}/'
-        model_name = model_json[args.simulation_round]['titles'][0]['title']
+    model_json = fetch_json(model_id)
+    model_url = f'https://www.isimip.org/impactmodels/details/{url_id or model_id}/'
+    model_name = model_json[args.simulation_round]['titles'][0]['title']
 
-        metadata['creators'] += model_json[args.simulation_round]['creators']
+    metadata['creators'] += model_json[args.simulation_round]['creators']
 
-        metadata['relatedIdentifiers'].append({
-            'relationType': 'IsDocumentedBy',
-            'relatedIdentifier': model_url,
-            'relatedIdentifierType': 'URL',
-            'citation': f'Detailed description on isimip.org: {model_name} {model_url}',
-            'resourceTypeGeneral': 'Text'
-        })
-        metadata['relatedIdentifiers'] += model_json[args.simulation_round]['related_identifiers']
+    metadata['relatedIdentifiers'].append({
+        'relationType': 'IsDocumentedBy',
+        'relatedIdentifier': model_url,
+        'relatedIdentifierType': 'URL',
+        'citation': f'Detailed description on isimip.org: {model_name} {model_url}',
+        'resourceTypeGeneral': 'Text'
+    })
+    metadata['relatedIdentifiers'] += model_json[args.simulation_round]['related_identifiers']
 
     for creator in metadata['creators']:
         if creator.get('name') is None:
