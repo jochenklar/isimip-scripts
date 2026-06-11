@@ -28,6 +28,8 @@ def main():
         'relatedIdentifiers': []
     }
 
+    refs = []
+
     model_json = fetch_json(model_id)
     model_url = f'https://www.isimip.org/impactmodels/details/{url_id or model_id}/'
     model_name = model_json[args.simulation_round]['titles'][0]['title']
@@ -65,16 +67,32 @@ def main():
                 identifier['relatedIdentifier'] = 'https://doi.org/' + identifier['relatedIdentifier']
 
             if 'title' in identifier:
+                title = identifier.pop('title')
+
+                if identifier['relatedIdentifierType'] == 'DOI':
+                    # create a short reference, e.g. Frieler et al. 2024
+                    match = re.search(r'(\w*?)\s.*?(\d{4})$', title)
+                    if match:
+                        refs.append(match.group(1) + ' et al. ' + match.group(2))
+                else:
+                    refs.append(identifier['relatedIdentifier'])
+
                 # substitute one or more commas which are not followed by a whitespace
                 # and append DOI URL
-                identifier['citation'] = re.sub(r',+([^\s])', r', \1',
-                                                identifier.pop('title')) + '. ' + identifier['relatedIdentifier']
+                identifier['citation'] = re.sub(r',+([^\s])', r', \1', title) + '. ' + identifier['relatedIdentifier']
 
                 # overide other fields of the isimip.org api
-                identifier['relationType'] = 'Cites'
-                identifier['resourceTypeGeneral'] = 'PeerReview'
+                if identifier['relatedIdentifierType'] == 'DOI':
+                    identifier['relationType'] = 'Cites'
+                    identifier['resourceTypeGeneral'] = 'PeerReview'
+                else:
+                    identifier['relationType'] = 'References'
+                    identifier['resourceTypeGeneral'] = 'Software'
 
             cleaned_metadata['relatedIdentifiers'].append(identifier)
+
+    refs_str = ', '.join(refs)
+    cleaned_metadata['ref'] = model_name + f' ({refs_str})' if refs_str else ''
 
     dump_json(cleaned_metadata, args.output_file)
 
